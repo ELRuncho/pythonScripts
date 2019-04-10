@@ -20,6 +20,10 @@ Shotty uses the aws-cli config file. create a profile for shotty:
 
 ###Running
 
-`pipenv run python Snapshotalyzer-3000/shotty.py`
+`pipenv run python Snapshotalyzer-3000/shotty.py <command> <subcomand> --project=Project`
+
+*command* is instnaces, volumes or snapshots
+*subcommand* - depends on command, use  <command> --help for a list of subcomands
+*--project* is optional
 
 

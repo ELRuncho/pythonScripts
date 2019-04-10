@@ -13,8 +13,5 @@ setup(
 			'click',
 			'boto3'
 		],
-		entry_points='''
-			[console_script]
-			shotty=shotty.shotty:cli
-		''',
+		entry_points={'console_scripts':['shotty=shotty.shotty:cli']},
 	)

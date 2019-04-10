@@ -111,25 +111,43 @@ def list_instances(project):
 			i.public_dns_name,tags.get('Project', '<no project>')
 			)))
 	return 
+
+
 @instances.command('stop')
 @click.option('--project', default=None, help='Only instances drom startet project')
 def stop_instances(project):
-	"stop ec2 instances"
+
+	"Stop EC2 instances"
+
 	instances = filter_instances(project)
 
 	for i in instances:
 		print("Stopping instance {0}".format(i.id))
-		i.stop()
+		try:
+			i.stop()
+		except botocore.exeptions.ClientError as e:
+			print("Could not stop instance {0}. ".filter(i.id))
+			continue
+
+	return
+
 
 @instances.command('start')
 @click.option('--project', default=None, help='Only instances drom statet project')
 def start_instances(project):
-	"start ec2 instances"
+
+	"Start EC2 instances"
+
 	instances = filter_instances(project)
 
 	for i in instances:
-		print("Starting instance {0}".format(i.id))
-		i.start()
+		print("Starting instance {0}. ".format(i.id))
+		try:
+			i.start()
+		except botocore.exeptions.ClientError as e:
+			print("Could not start instnance {0}".filter(i.id))
+			continue
+	return
 
 
 

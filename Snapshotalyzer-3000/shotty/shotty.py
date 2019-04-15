@@ -105,59 +105,121 @@ def create_snapshots(project):
 
 @instances.command('list')
 @click.option('--project', default=None,help="Only instances for project (tag Project:<name>")
-def list_instances(project):
+@click.option('--force', 'forced', default=False, is_flag=True, help="Forces the action even if no project is specified")
+def list_instances(project,forced):
 	"List EC2 instances"
-	instances= filter_instances(project)
+	
+	if project:
+		instances= filter_instances(project)
+		for i in instances:
+			tags = { t['Key']: t['Value'] for t in i.tags or [] }
+			print(' | '.join((
+				i.id,
+				i.instance_type,
+				i.placement['AvailabilityZone'],
+				i.state['Name'],
+				i.public_dns_name,tags.get('Project', '<no project>')
+				)))
+	elif forced:
+		instances= filter_instances(False)
+		for i in instances:
+			tags = { t['Key']: t['Value'] for t in i.tags or [] }
+			print(' | '.join((
+				i.id,
+				i.instance_type,
+				i.placement['AvailabilityZone'],
+				i.state['Name'],
+				i.public_dns_name,tags.get('Project', '<no project>')
+				)))
+	else:
+		print("You must include the project")
 
-	for i in instances:
-		tags = { t['Key']: t['Value'] for t in i.tags or [] }
-		print(' | '.join((
-			i.id,
-			i.instance_type,
-			i.placement['AvailabilityZone'],
-			i.state['Name'],
-			i.public_dns_name,tags.get('Project', '<no project>')
-			)))
 	return 
 
 
 @instances.command('stop')
 @click.option('--project', default=None, help='Only instances drom startet project')
-def stop_instances(project):
+@click.option('--force', 'forced', default=False, is_flag=True, help="Forces the action even if no project is specified")
+def stop_instances(project,forced):
 
 	"Stop EC2 instances"
+	if project:
+		instances = filter_instances(project)
 
-	instances = filter_instances(project)
+		for i in instances:
+			print("Stopping instance {0}".format(i.id))
+			try:
+				i.stop()
+			except botocore.exeptions.ClientError as e:
+				print("Could not stop instance {0}. ".filter(i.id))
+				continue
+	elif forced:
+		instances = filter_instances(False)
 
-	for i in instances:
-		print("Stopping instance {0}".format(i.id))
-		try:
-			i.stop()
-		except botocore.exeptions.ClientError as e:
-			print("Could not stop instance {0}. ".filter(i.id))
-			continue
-
+		for i in instances:
+			print("Stopping instance {0}".format(i.id))
+			try:
+				i.stop()
+			except botocore.exeptions.ClientError as e:
+				print("Could not stop instance {0}. ".filter(i.id))
+				continue
+	else:
+		print("You must include the project name")
 	return
 
 
 @instances.command('start')
-@click.option('--project', default=None, help='Only instances drom statet project')
-def start_instances(project):
+@click.option('--project', default=None, help='Only starts instances from stated project')
+@click.option('--force', 'forced', default=False, is_flag=True, help="Forces the action even if no project is specified")
+def start_instances(project, forced):
 
 	"Start EC2 instances"
+	if project:
+		instances = filter_instances(project)
 
-	instances = filter_instances(project)
+		for i in instances:
+			print("Starting instance {0}. ".format(i.id))
+			try:
+				i.start()
+			except botocore.exeptions.ClientError as e:
+				print("Could not start instnance {0}".format(i.id))
+				continue
+	elif forced:
+		instances = filter_instances(False)
 
-	for i in instances:
-		print("Starting instance {0}. ".format(i.id))
-		try:
-			i.start()
-		except botocore.exeptions.ClientError as e:
-			print("Could not start instnance {0}".filter(i.id))
-			continue
+		for i in instances:
+			print("Starting instance {0}. ".format(i.id))
+			try:
+				i.start()
+			except botocore.exeptions.ClientError as e:
+				print("Could not start instnance {0}".format(i.id))
+				continue
+	else:
+		print("You must include the project name")
 	return
 
+@instances.command('reboot')
+@click.option('--project', default=None, help='Only reboots instances from specified project')
+@click.option('--force', 'forced', default=False, is_flag=True, help="Forces the action even if no project is specified")
+def reboot_instance(project, forced):
 
+	"Reboots EC2 instances"
+	if project:
+		instances = filter_instances(project)
+
+		for i in instances:
+			print("Rebooting instance {0}...".format(i.id))
+			i.reboot()
+	elif forced:
+		instances = filter_instances(False)
+
+		for i in instances:
+			print("Rebooting instnace {0}....".format(i.id))
+			i.reboot()
+	else:
+		print("You must include the project name")
+	return
 
 if __name__== '__main__':
 	cli()
+	#anush
